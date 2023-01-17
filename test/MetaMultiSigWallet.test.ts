@@ -19,5 +19,8 @@ describe("MetaMultiSigWallet contract", () => {
     // assert about chainId, signaturesRequired
     expect(await contract.nonce()).to.eq(0);
     expect(await contract.signaturesRequired()).to.eq(2);
+    expect(await contract.isOwner(signers[0].address)).to.be.true;
+    expect(await contract.isOwner(signers[1].address)).to.be.true;
+    expect(await contract.isOwner(signers[2].address)).to.be.false;
   });
 });
