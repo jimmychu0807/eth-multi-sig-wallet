@@ -5433,6 +5433,7 @@ __metadata:
     hardhat: ^2.11.1
     hardhat-deploy: ^0.11.22
     hardhat-gas-reporter: ^1.0.8
+    solhint: ^3.3.7
     solidity-coverage: ^0.8.0
     ts-node: ">=8.0.0"
     typechain: ^8.1.0
@@ -6696,7 +6697,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"solhint@npm:^3.0.0":
+"solhint@npm:^3.0.0, solhint@npm:^3.3.7":
   version: 3.3.7
   resolution: "solhint@npm:3.3.7"
   dependencies:

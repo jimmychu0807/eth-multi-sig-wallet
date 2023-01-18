@@ -2,5 +2,7 @@
   "extends": "solhint:recommended",
   "plugins": [],
   "rules": {
+    "reason-string": ["warn", { "maxLength": 64 }],
+    "func-visibility": ["warn",{ "ignoreConstructors": true }]
   }
 }
