@@ -11,6 +11,7 @@
     "packages/*"
   ],
   "scripts": {
+    "hardhat:node": "yarn workspace @multi-sig-wallet/hardhat hardhat node",
     "hardhat:compile": "yarn workspace @multi-sig-wallet/hardhat compile",
     "hardhat:test": "yarn workspace @multi-sig-wallet/hardhat test",
     "hardhat:lint": "yarn workspace @multi-sig-wallet/hardhat lint",

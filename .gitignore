@@ -19,3 +19,4 @@ typechain-types
 cache
 artifacts
 
+packages/hardhat/deployments
