@@ -13,7 +13,7 @@ pragma solidity ^0.8.17;
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "hardhat/console.sol";
 
-contract MetaMultiSigWallet {
+contract MultiSigWallet {
   event Deposit(address indexed sender, uint amount, uint balance);
   event Owner(address indexed owner, bool added);
   event ExecuteTransaction(address indexed sender, address to, uint value, bytes data, uint nonce, bytes32 hash, bytes result);
@@ -63,11 +63,16 @@ contract MetaMultiSigWallet {
   }
 
   function getTransactionHash(
+    uint _nonce,
     address to,
     uint value,
     bytes memory data
-  ) private returns (bytes32) {
-    return keccak256(abi.encodePacked(chainId, address(this), nonce++, to, value, data));
+  ) public view returns (bytes32) {
+    return keccak256(abi.encodePacked(chainId, address(this), _nonce, to, value, data));
+  }
+
+  function tryRecover(bytes32 _hash, bytes memory _signature) public pure returns(address, ECDSA.RecoverError) {
+    return ECDSA.tryRecover(ECDSA.toEthSignedMessageHash(_hash), _signature);
   }
 
   // A key here is that signatures need to be sorted when calling this functions
@@ -76,36 +81,43 @@ contract MetaMultiSigWallet {
     returns (bytes memory)
   {
     require(isOwner[msg.sender], "Only the contract owner can execute transactions");
-    bytes32 hash = getTransactionHash(to, value, data);
-
-    console.log("tx hash");
-    console.logBytes32(hash);
+    bytes32 hash = getTransactionHash(nonce, to, value, data);
 
     uint validSignatures = 0;
-    address duplicateGuard = address(0);
 
-    for (uint i = 0; i < signatures.length; i++) {
-      bytes32 signedMsgHash = ECDSA.toEthSignedMessageHash(hash);
-      console.log("eth signed message");
-      console.logBytes32(signedMsgHash);
+    address[] memory duplicateGuard = new address[](signatures.length - 1);
+    address recoveredAddr;
+    ECDSA.RecoverError errCode;
 
-      address recoveredAddr = ECDSA.recover(signedMsgHash, signatures[i]);
-      console.log("recovered addr: %s", recoveredAddr);
+    for (uint sIdx = 0; sIdx < signatures.length; sIdx++) {
+      (recoveredAddr, errCode) = ECDSA.tryRecover(ECDSA.toEthSignedMessageHash(hash), signatures[sIdx]);
 
-      if (duplicateGuard >= recoveredAddr) {
-        console.log("duplicated addr: %s", recoveredAddr);
-      } else if (isOwner[recoveredAddr]) {
+      if (errCode != ECDSA.RecoverError.NoError) continue;
+
+      // check duplicate
+      bool bDup = false;
+      for (uint dIdx = 0; dIdx < duplicateGuard.length; dIdx++) {
+        if (duplicateGuard[dIdx] == recoveredAddr) {
+          bDup = true;
+          continue;
+        }
+      }
+
+      if (bDup) continue;
+
+      if (isOwner[recoveredAddr]) {
         validSignatures++;
-        duplicateGuard = recoveredAddr;
+        // save the signature if the signature is not the last one.
+        if (sIdx != signatures.length - 1) duplicateGuard[duplicateGuard.length - 1] = recoveredAddr;
       }
     }
 
     require(validSignatures >= signaturesRequired, "executeTransaction: not enough valid signatures");
 
-    // TODO: need to actually call the function with arguments here
-    //
+    (bool success, bytes memory result) = to.call{value: value}(data);
+    nonce++;
 
-    bytes memory result = "result";
+    require(success, "executeTransaction: tx failed");
 
     emit ExecuteTransaction(msg.sender, to, value, data, nonce - 1, hash, result);
 

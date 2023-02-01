@@ -15,8 +15,9 @@ describe("Tokens contract", () => {
 
   beforeEach(async () => {
     const [deployer] = await ethers.getSigners();
-    let factory = await ethers.getContractFactory("Tokens");
+    let factory = await ethers.getContractFactory("Tokens", deployer);
     tokens = await factory.deploy();
+    await tokens.deployTransaction.wait();
   });
 
   it("deployment", async () => {
@@ -28,5 +29,7 @@ describe("Tokens contract", () => {
 
     const amt = await tokens.balanceOf(deployer, MAIN_CURRENCY);
     expect(amt.eq(DEFAULT_MINT_AMT)).to.true;
-  })
+  });
+
+
 })
