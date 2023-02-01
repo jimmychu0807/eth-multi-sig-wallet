@@ -114,6 +114,7 @@ contract MultiSigWallet {
 
     require(validSignatures >= signaturesRequired, "executeTransaction: not enough valid signatures");
 
+    // solhint-disable-next-line avoid-low-level-calls
     (bool success, bytes memory result) = to.call{value: value}(data);
     nonce++;
 

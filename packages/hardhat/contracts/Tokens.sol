@@ -7,10 +7,10 @@ import "@openzeppelin/contracts/token/ERC1155/presets/ERC1155PresetMinterPauser.
 
 contract Tokens is ERC1155PresetMinterPauser {
   uint256 public constant MAIN_CURRENCY = 0;
-  bytes32 public constant admin = keccak256("DEFAULT_ADMIN_ROLE");
+  bytes32 public constant ADMIN = keccak256("DEFAULT_ADMIN_ROLE");
 
   constructor() ERC1155PresetMinterPauser("https://some.domain/{id}.json") {
-    grantRole(admin, msg.sender);
+    grantRole(ADMIN, msg.sender);
     _mint(msg.sender, MAIN_CURRENCY, 10**18, "");
   }
 }
